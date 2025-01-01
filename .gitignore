@@ -1,0 +1,10 @@
+# Ignore .Xil directory
+prj/classic/.Xil/
+
+# Ignore project directory
+prj/classic/project/
+
+# Ignore specific files
+vivado.jou
+vivado.log
+vivado_pid*.str
