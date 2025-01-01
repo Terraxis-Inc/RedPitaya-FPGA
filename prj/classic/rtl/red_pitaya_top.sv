@@ -389,9 +389,16 @@ red_pitaya_id i_id (
 // LED and GPIO
 ////////////////////////////////////////////////////////////////////////////////
 
-IOBUF iobuf_led   [8-1:0] (.O(gpio.i[ 7: 0]), .IO(led_o)   , .I(gpio.o[ 7: 0]), .T(gpio.t[ 7: 0]));
-IOBUF iobuf_exp_p [8-1:0] (.O(gpio.i[15: 8]), .IO(exp_p_io), .I(gpio.o[15: 8]), .T(gpio.t[15: 8]));
-IOBUF iobuf_exp_n [8-1:0] (.O(gpio.i[23:16]), .IO(exp_n_io), .I(gpio.o[23:16]), .T(gpio.t[23:16]));
+logic [23:0] gpio_o;
+
+always_comb begin
+    gpio_o = gpio.o;
+    gpio_o[17] = !gpio_o[17];
+end
+
+IOBUF iobuf_led   [8-1:0] (.O(gpio.i[ 7: 0]), .IO(led_o)   , .I(gpio_o[ 7: 0]), .T(gpio.t[ 7: 0]));
+IOBUF iobuf_exp_p [8-1:0] (.O(gpio.i[15: 8]), .IO(exp_p_io), .I(gpio_o[15: 8]), .T(gpio.t[15: 8]));
+IOBUF iobuf_exp_n [8-1:0] (.O(gpio.i[23:16]), .IO(exp_n_io), .I(gpio_o[23:16]), .T(gpio.t[23:16]));
 
 ////////////////////////////////////////////////////////////////////////////////
 // oscilloscope
