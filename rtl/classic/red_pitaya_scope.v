@@ -64,6 +64,7 @@ module red_pitaya_scope #(
    output     [  4-1: 0] trig_ext_asg_o  ,  // output External and ASG trigger to share between multiple scope modules
    input      [  4-1: 0] trig_ext_asg_i  ,  // input External and ASG trigger 
    output                daisy_trig_o    ,  // trigger for daisy chaining
+   output                zc_trig_o       ,
    // AXI0 master
    output                axi0_clk_o      ,  // global clock
    output                axi0_rstn_o     ,  // global reset
@@ -230,6 +231,22 @@ dec_avg_div_b
    .dv_i(div_go)     ,
    .q_o(div_out_b)   ,
    .dv_o(div_ok_b)
+);
+
+//wire zc_trig;
+//zero_cross_trig zc_trig_cha(
+//    .clk                    (adc_clk_i),
+//    .adc_reset_n            (adc_rstn_i),
+//    .adc_a_filt_out         (adc_a_rd),
+//    .zero_cross_detected    (zc_trig)
+//);
+
+ila_0 ila_0 (
+	.clk(adc_clk_i), // input wire clk
+	.probe0(adc_trig_ap), // input wire [0:0]  probe0  
+	.probe1(trig_ch_o), // input wire [0:0]  probe1
+	.probe2(adc_a_rd), // input wire [13:0]  probe2
+	.probe3(zero_cross) // input wire [0:0]  probe3 
 );
 
 always @(posedge adc_clk_i)
@@ -918,6 +935,34 @@ always @(posedge adc_clk_i) begin //delay to trigger
 end
 
 assign trig_ch_o = {adc_trig_bn, adc_trig_bp, adc_trig_an, adc_trig_ap};
+
+reg zero_cross;
+reg zero_cross_q;
+
+always@(*) begin
+    zero_cross = zero_cross_q;
+    if (adc_trig_ap) begin
+        zero_cross = 1'd1;
+    end
+    else if(adc_trig_an) begin
+        zero_cross = 1'd0;
+    end
+    else begin
+        zero_cross = zero_cross_q;
+    end
+end
+
+always@(posedge adc_clk_i) begin
+    if(!adc_rstn_i) begin
+        zero_cross_q <= 1'd0;
+    end
+    else begin
+        zero_cross_q <= zero_cross;
+    end
+end
+
+assign zc_trig_o = zero_cross;
+
 assign daisy_trig_o = adc_trig;
 //---------------------------------------------------------------------------------
 //  Trigger created from input signal

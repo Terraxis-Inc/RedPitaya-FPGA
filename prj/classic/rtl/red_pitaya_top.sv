@@ -389,11 +389,13 @@ red_pitaya_id i_id (
 // LED and GPIO
 ////////////////////////////////////////////////////////////////////////////////
 
+wire zc_trig_gpio;
+
 logic [23:0] gpio_o;
 
 always_comb begin
     gpio_o = gpio.o;
-    gpio_o[17] = !gpio_o[17];
+    gpio_o[17] = zc_trig_gpio;
 end
 
 IOBUF iobuf_led   [8-1:0] (.O(gpio.i[ 7: 0]), .IO(led_o)   , .I(gpio_o[ 7: 0]), .T(gpio.t[ 7: 0]));
@@ -406,6 +408,8 @@ IOBUF iobuf_exp_n [8-1:0] (.O(gpio.i[23:16]), .IO(exp_n_io), .I(gpio_o[23:16]), 
 
 logic trig_asg_out;
 
+//assign zc_trig_gpio = 
+
 red_pitaya_scope i_scope (
   // ADC
   .adc_a_i       (adc_dat[0]  ),  // CH 1
@@ -414,6 +418,7 @@ red_pitaya_scope i_scope (
   .adc_rstn_i    (adc_rstn    ),  // reset - active low
   .trig_ext_i    (gpio.i[8]   ),  // external trigger
   .trig_asg_i    (trig_asg_out),  // ASG trigger
+  .zc_trig_o     (zc_trig_gpio ),   //zero crossing trig out
   // System bus
   .sys_addr      (sys[1].addr ),
   .sys_wdata     (sys[1].wdata),
